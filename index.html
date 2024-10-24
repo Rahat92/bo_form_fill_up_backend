@@ -1,0 +1,157 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://unpkg.com/pdf-lib@1.4.0"></script>
+    <script src="https://unpkg.com/downloadjs@1.4.7"></script>
+  </head>
+
+  <body>
+    <p>Click the button to modify an existing PDF document with <code>pdf-lib</code></p>
+    <button onclick="modifyPdf()">Modify PDF</button>
+    <p class="small">(Your browser will download the resulting file)</p>
+  </body>
+
+  <script>
+    const { degrees, PDFDocument, rgb, StandardFonts } = PDFLib
+
+    async function modifyPdf() {
+      // Fetch an existing PDF document
+      const url = 'http://localhost:3001/modify-pdf'
+  		const existingPdfBytes = await fetch(url).then(res => res.arrayBuffer())
+
+      // Load a PDFDocument from the existing PDF bytes
+      const pdfDoc = await PDFDocument.load(existingPdfBytes)
+
+      // Embed the Helvetica font
+      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+
+      // Get the first page of the document
+      const pages = pdfDoc.getPages()
+      const firstPage = pages[0]
+
+      // Get the width and height of the first page
+      const { width, height } = firstPage.getSize()
+
+      // Draw a string of text diagonally across the first page
+      firstPage.drawText('This text was added!', {
+        x: 160,
+        y: height / 2 + 296,
+        size: 14,
+        font: helveticaFont,
+        color: rgb(0, 0, 0),
+        rotate: degrees(0),
+      })
+
+      // Serialize the PDFDocument to bytes (a Uint8Array)
+      const pdfBytes = await pdfDoc.save()
+      // document.location.pathname('http://localhost:3000/modify-pdf')
+			// Trigger the browser to download the PDF document
+      download(pdfBytes, "pdf-lib_modification_example.pdf", "application/pdf");
+    }
+  </script>
+</html>
+
+
+
+একক আবেদনকারী নাম
+SHISHIR SARKAR
+
+
+জন্ম তারিখ
+18/05/19997
+
+
+লিঙ্গ
+Male
+
+
+পেশা
+business
+
+
+পিতার / স্বামী / সিইও এর নাম
+JOGESH CHANDRA SARKAR
+
+
+মায়ের নাম
+DELA RANI SARKAR
+
+
+ঠিকানা
+64/2 EAST BADDA, DHAKA 1212
+
+
+শহর
+DHAKA
+
+
+বিভাগ
+DHAKA
+
+
+পোস্টাল কোড
+1212
+
+
+দেশ
+Bangladesh
+
+
+মোবাইল নাম্বার
+01515210114
+
+
+ইমেইল
+ISHISHIRSARKAR@GMAIL.COM
+
+
+জাতীয়তা
+BANGLADESHI
+
+
+জাতীয় আইডি নাম্বার
+9154967252
+
+
+বিনামূল্যে আইপিও সদস্য ক্লাবের জন্য সাইন আপ করুন
+হাঁ
+
+
+আপনার ব্যাংকের নাম
+UTTARA BANK PLC
+
+
+শাখার নাম
+BADDA
+
+
+ব্যাংক একাউন্ট নাম্বার
+169311100002206
+
+
+ব্যাংক রাউটিং নম্বর (ঐচ্ছিক)
+250260340
+
+
+এই অ্যাকাউন্টের নমিনির নাম
+shipra sarkar
+
+
+অ্যাকাউন্ট হোল্ডার সঙ্গে সম্পর্ক
+sistar
+
+
+নাম
+shishir sarkar
+
+
+ফোন নম্বর
+01515210114
+
+
+টাকা জমা (পরিমাণ)
+450
+
+
+মিডওয়ের ব্যাংক / মোবাইল ট্রান্সফার
+bKash
