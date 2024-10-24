@@ -95,6 +95,7 @@
 
 
 const express = require('express');
+const axios = require('axios')
 const regeneratorRuntime = require("regenerator-runtime");
 
 const cors = require('cors')
@@ -105,8 +106,13 @@ const path = require('path');
 const app = express();
 app.use(express.json())
 app.use(cors({ origin: '*' }))
+
 app.post('/modify-pdf', async (req, res) => {
   console.log(req.body)
+  // fetch(req.body.clientPhoto).then(res => {
+  //   fs.writeFile('client-image')
+  // })
+  // downloadImage(req.body.clientPhoto, 'image.png')
   try {
     // Load the existing PDF file from the file system
     const existingPdfBytes = fs.readFileSync(__dirname + "/BO_Account_Open_Form.pdf"); // Update with your file path
@@ -117,43 +123,44 @@ app.post('/modify-pdf', async (req, res) => {
     // Get the first page of the existing PDF (or another page if needed)
     const pages = pdfDoc.getPages();
     const firstPage = pages[0]; // Modify this page or loop through other pages
-    const secondPage = pages[1]; // Modify this page or loop through other pages
-
-    // Modify the page (e.g., add text)
     const { width, height } = firstPage.getSize();
-    // firstPage.drawText('Modified Text Example!', {
-    //   x: 50,
-    //   y: height - 100, 
-    //   size: 8,
-    //   color: rgb(1, 0, 0), // Red color
-    //   characterSpacing: 5
-    // });
+    const secondPage = pages[1]; // Modify this page or loop through other pages
+    const { width:secondPageWidth, height:secondPageHeight } = secondPage.getSize();
+    const fetchImage = async (url) => {
+      const response = await axios.get(url, { responseType: 'arraybuffer' });
+      return response.data;
+    };
+    const imageBytes = await fetchImage(req.body.clientPhoto);
+    const signatureBytes = await fetchImage(req.body.clientSignature)
+    let image;
 
+    try {
+      image = await pdfDoc.embedPng(imageBytes); // Try to embed as PNG
+    } catch (error) {
+      image = await pdfDoc.embedJpg(imageBytes); // Fallback to JPG
+    }
+    let signature;
 
-
-
-
-
-    // const dob = '1-1-97';
-    // let x = 50;  // Starting position for the text
-    // const y = 700;  // Vertical position for the text
-    // const size = 10;
-    // const spacing = 5.02;  // Adjust this for letter spacing
-
-    // // Draw each character with spacing
-    // for (let i = 0; i < name.length; i++) {
-    //   firstPage.drawText(name[i], {
-    //     x: x,
-    //     y: height - 307.8,
-    //     size: size,
-    //     color: rgb(0, 0, 0),
-    //   });
-    //   // Increase x position for the next character
-    //   x += size + spacing; 
-    // }
-
+    try {
+      signature = await pdfDoc.embedPng(signatureBytes); // Try to embed as PNG
+    } catch (error) {
+      signature = await pdfDoc.embedJpg(signatureBytes); // Fallback to JPG
+    }
+    secondPage.drawImage(image, {
+      x: 92, // Position the image
+      y: secondPageHeight-460.5, // Position from the top
+      width: 102,
+      height: 105
+    })
+    secondPage.drawImage(signature, {
+      x: 400, // Position the image
+      y: secondPageHeight-649.5, // Position from the top
+      width: 102,
+      height: 26
+    })
+    
     const fontBytes = fs.readFileSync(__dirname + "/fonts/NotoSansSymbols-Regular.ttf");
-    const bengliFontBytes = fs.readFileSync(__dirname + "/fonts/SutonnySushreeMJ-Italic.ttf");
+    const bengliFontBytes = fs.readFileSync(__dirname + "/fonts/Shonar.ttf");
     const customFont = await pdfDoc.embedFont(fontBytes);
     const customFontBengli = await pdfDoc.embedFont(bengliFontBytes);
     const generateAndPlaceText = (page, type, content, x, y, size, color, spacing, font) => {
@@ -201,27 +208,7 @@ app.post('/modify-pdf', async (req, res) => {
         });
       }
     }
-    const text = 'ডিজাইন গুলি';
-    let xPosition = 50; // Starting x position
-
-    for (const char of text) {
-      firstPage.drawText(char, {
-        x: xPosition,
-        y: 350,
-        size: 24,
-        font: customFontBengli,
-        color: rgb(0, 0, 0),
-      });
-      xPosition += 20; // Adjust the spacing value as needed
-    }
-
-    secondPage.drawText('আমার সোনার বাংলা', {
-      x: 0,
-      y: 500,
-      size: 24,
-      font: customFontBengli,
-      color: rgb(0, 0, 0),
-    });
+  
     // account holder name
     generateAndPlaceText(firstPage, 'name', req.body.clientName, 51, 307.8, 10, { r: 0, g: 0, b: 0 }, 4.8, '');
 
