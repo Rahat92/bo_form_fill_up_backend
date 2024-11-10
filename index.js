@@ -12,9 +12,7 @@ const app = express();
 app.use(express.json())
 app.use(cors({ origin: ["http://157.142.6.2:8082", "http://localhost:3000", "http://157.142.6.2:8080", "http://localhost:8080"] }))
 app.post('/modify-pdf', async (req, res) => {
-
-
-
+  const rootFolder = 'C:\\Users\\ASUS\\Desktop\\BO'
   let docx = officegen('docx')
 
   // Officegen calling this function after finishing to generate the docx document:
@@ -29,8 +27,15 @@ app.post('/modify-pdf', async (req, res) => {
     console.log(err)
   })
 
+
   // Create a new paragraph:
+  const folderName = req.body.clientId;
   let pObj = docx.createP()
+  pObj.addText(`SUBMITTED INFORMATION: ${folderName}`, {
+    bold: true,
+    undefined: true
+  })
+  pObj = docx.createP()
 
   Object.keys(req.body.fields).forEach((item, index) => {
     pObj.addText(Object.keys(req.body.fields)[index], {
@@ -45,7 +50,7 @@ app.post('/modify-pdf', async (req, res) => {
 
   // // pObj.addText(' and back color.', { color: '00ffff', back: '000088' })
 
-  
+
 
   // pObj.addText('Since ')
   // pObj.addText('officegen 0.2.12', {
@@ -102,7 +107,7 @@ app.post('/modify-pdf', async (req, res) => {
 
   // Let's generate the Word document into a file:
 
-  let out = fs.createWriteStream(`C:\\Users\\ASUS\\Desktop\\BO\\${folderName}`)
+  let out = fs.createWriteStream(`${rootFolder}\\${folderName}\\${folderName}.docx`)
 
   out.on('error', function (err) {
     console.log(err)
@@ -112,14 +117,13 @@ app.post('/modify-pdf', async (req, res) => {
   docx.generate(out)
 
 
-  const folderName = req.body.clientId;
   const getFileExtension = (fileName) => {
     const fileExtension = fileName.split('.')[fileName.split('.').length - 1];
     return fileExtension;
   }
   console.log(req.body)
-  if (!fs.existsSync(`C:\\Users\\ASUS\\Desktop\\BO\\${folderName}`)) {
-    fs.mkdirSync(path.join('C:\\Users\\ASUS\\Desktop\\BO', folderName), (err) => {
+  if (!fs.existsSync(`${rootFolder}\\${folderName}`)) {
+    fs.mkdirSync(path.join(`${rootFolder}`, folderName), (err) => {
       if (err) {
         console.log(err)
       } else {
@@ -133,10 +137,8 @@ app.post('/modify-pdf', async (req, res) => {
     })
   }
   try {
-    // Load the existing PDF file from the file system
     const existingPdfBytes = fs.readFileSync(__dirname + "/BO_Account_Open_Form.pdf"); // Update with your file path
 
-    // Load the PDF into pdf-lib
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     pdfDoc.registerFontkit(fontKit)
     // Get the first page of the existing PDF (or another page if needed)
@@ -151,7 +153,7 @@ app.post('/modify-pdf', async (req, res) => {
     };
     if (req.body.clientPhoto) {
       const imageBytes = await fetchImage(req.body.clientPhoto);
-      fs.writeFile(`C:\\Users\\ASUS\\Desktop\\BO\\${folderName}/${folderName}-photo.jpg`, imageBytes, err => {
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-photo.jpg`, imageBytes, err => {
         if (err) {
           console.log(err)
         }
@@ -178,7 +180,7 @@ app.post('/modify-pdf', async (req, res) => {
 
     if (req.body.clientSignature) {
       const signatureBytes = await fetchImage(req.body.clientSignature)
-      fs.writeFile(`C:\\Users\\ASUS\\Desktop\\BO\\${folderName}/${folderName}-signature.jpg`, signatureBytes, err => {
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-signature.jpg`, signatureBytes, err => {
         if (err) {
           console.log(err)
         }
@@ -200,7 +202,7 @@ app.post('/modify-pdf', async (req, res) => {
       const fileExtension = getFileExtension(req.body.clientNidPhoto)
       const clientNidPhotoBytes = await fetchImage(req.body.clientNidPhoto)
 
-      fs.writeFile(`C:\\Users\\ASUS\\Desktop\\BO\\${folderName}/${folderName}-client-nid.${fileExtension}`, clientNidPhotoBytes, err => {
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-nid.${fileExtension}`, clientNidPhotoBytes, err => {
         if (err) {
           console.log(err)
         }
@@ -210,7 +212,7 @@ app.post('/modify-pdf', async (req, res) => {
       const fileExtension = getFileExtension(req.body.clientNominyPhoto)
 
       const clientNomineePhotoBytes = await fetchImage(req.body.clientNominyPhoto)
-      fs.writeFile(`C:\\Users\\ASUS\\Desktop\\BO\\${folderName}/${folderName}-client-nominee.${fileExtension}`, clientNomineePhotoBytes, err => {
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-nominee.${fileExtension}`, clientNomineePhotoBytes, err => {
         if (err) {
           console.log(err)
         }
@@ -220,7 +222,7 @@ app.post('/modify-pdf', async (req, res) => {
       const fileExtension = getFileExtension(req.body.jointApplicantSign)
 
       const jointApplicantSignatureBytes = await fetchImage(req.body.jointApplicantSign)
-      fs.writeFile(`C:\\Users\\ASUS\\Desktop\\BO\\${folderName}/${folderName}-joint-applicant-sign.${fileExtension}`, jointApplicantSignatureBytes, err => {
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-sign.${fileExtension}`, jointApplicantSignatureBytes, err => {
         if (err) {
           console.log(err)
         }
@@ -244,7 +246,7 @@ app.post('/modify-pdf', async (req, res) => {
 
       const jointApplicantPhotoBytes = await fetchImage(req.body.jointApplicantPhoto)
 
-      fs.writeFile(`C:\\Users\\ASUS\\Desktop\\BO\\${folderName}/${folderName}-joint-applicant-photo.${fileExtension}`, jointApplicantPhotoBytes, err => {
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-photo.${fileExtension}`, jointApplicantPhotoBytes, err => {
         if (err) {
           console.log(err)
         }
@@ -268,7 +270,7 @@ app.post('/modify-pdf', async (req, res) => {
 
       const clientBankDepositePhotoBytes = await fetchImage(req.body.clientBankDepositeScreenShot)
 
-      fs.writeFile(`C:\\Users\\ASUS\\Desktop\\BO\\${folderName}/${folderName}-bank-deposite-screenshot.${fileExtension}`, clientBankDepositePhotoBytes, err => {
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-bank-deposite-screenshot.${fileExtension}`, clientBankDepositePhotoBytes, err => {
         if (err) {
           console.log(err)
         }
@@ -433,14 +435,19 @@ app.post('/modify-pdf', async (req, res) => {
     });
 
     // Send the modified PDF for preview
-    fs.writeFile('pdf.pdf', modifiedPdfBytes, err => {
+    fs.writeFile(`${rootFolder}\\${folderName}/${folderName}.pdf`, modifiedPdfBytes, err => {
       if (err) {
         console.log(err)
       } else {
         console.log('pdf saved!')
       }
     })
-    res.send(Buffer.from(modifiedPdfBytes));
+    // res.send(Buffer.from(modifiedPdfBytes));
+    res.status(200).json({
+      status:'Success',
+      message: 'Folder create successfully.',
+      folderPath: rootFolder
+    })
   } catch (error) {
     console.error('Error modifying PDF:', error);
     res.status(500).send('Error modifying PDF');
