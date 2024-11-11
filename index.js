@@ -12,7 +12,66 @@ const app = express();
 app.use(express.json())
 app.use(cors({ origin: ["http://157.142.6.2:8082", "http://localhost:3000", "http://157.142.6.2:8080", "http://localhost:8080"] }))
 app.post('/modify-pdf', async (req, res) => {
+
+  function placeWordAtFixedColumn(line, word, column) {
+    // Ensure the line has enough spaces to reach the desired column
+    if (line.length < column - 1) {
+      line += " ".repeat(column - 1 - line.length);
+    }
+    
+    // Place the word at the exact column position
+    line = line.slice(0, column - 1) + word + line.slice(column - 1 + word.length);
+    
+    return line;
+  }
+  
+  // Start with an empty line
+  let line01 = "";
+  
+  // Add words at specified absolute column positions
+  line01 = placeWordAtFixedColumn(line01, "Hello", 1);
+  line01 = placeWordAtFixedColumn(line01, "world", 16);
+  line01 = placeWordAtFixedColumn(line01, "How", 31);
+  line01 = placeWordAtFixedColumn(line01, "", 40);
+  let line02 = "";
+  
+  // Add words at specified absolute column positions
+  line02 = placeWordAtFixedColumn(line02, "Hello", 1);
+  line02 = placeWordAtFixedColumn(line02, "world", 16);
+  line02 = placeWordAtFixedColumn(line02, "How", 31);
+  
+  // Write the line to a text file
+  fs.writeFile("FixedColumnText.11", line01+"\n"+line02+"\n", (err) => {
+    if (err) {
+      console.error("Error writing file:", err);
+      return;
+    }
+    console.log("Text file created with words at fixed columns.");
+  });
+  // Generate Text file
+  const testWord = "Rahatt"
   const rootFolder = 'C:\\Users\\ASUS\\Desktop\\BO'
+  const folderName = req.body.clientId;
+  const text = `0000007Admin 018900\n` +
+    `01000001\n` +
+    `02YYG10042${" ".repeat(130)}1121001678104${" ".repeat(3)}Y140261725${" ".repeat(123)}\n` +
+    `030101BAN25081990${" ".repeat(40)}F${" ".repeat(25)}\n` +
+    `04MUKTA${" ".repeat(125)}AKTER${" ".repeat(25)}MUKTA AKTER${" ".repeat(109)}TA-200/1 SOUTH BADDA${" ".repeat(10)}GULSHAN.DHAKA-1212${" ".repeat(42)}DHAKA${" ".repeat(20)}DHAKA${" ".repeat(20)}BANGLADESH${" ".repeat(15)}1212${" ".repeat(6)}01985336212${" ".repeat(49)}mdmahabuburrahmansir@gmail.com${" ".repeat(50)}MOHAMMAD MAHABUBUR RAHMAN${" ".repeat(5)}MOJIDA BEGUM${" ".repeat(89)}YHOUSE WIFE${" ".repeat(20)}9104812590${" ".repeat(10)}\n` +
+    `05${" ".repeat(240)}\n` +
+    `06${" ".repeat(240)}\n` +
+    `070101G100420101.jpg${" ".repeat(36)}\n`
+    ;
+
+
+  // fs.readFile("FixedSpaceText.txt", "utf8", (err, data) => {
+  //   if (err) {
+  //     console.error("Error reading file:", err);
+  //     return;
+  //   }
+    
+  //   const lineCount = data.split(/\r?\n/).length;
+     
+  // });
   let docx = officegen('docx')
 
   // Officegen calling this function after finishing to generate the docx document:
@@ -29,7 +88,6 @@ app.post('/modify-pdf', async (req, res) => {
 
 
   // Create a new paragraph:
-  const folderName = req.body.clientId;
   let pObj = docx.createP()
   pObj.addText(`SUBMITTED INFORMATION: ${folderName}`, {
     bold: true,
@@ -131,6 +189,7 @@ app.post('/modify-pdf', async (req, res) => {
       }
     })
   } else {
+
     return res.status(400).json({
       status: 'Fail',
       message: 'Already exist a folder with same name'
@@ -442,9 +501,16 @@ app.post('/modify-pdf', async (req, res) => {
         console.log('pdf saved!')
       }
     })
+    fs.writeFile(`${rootFolder}\\${folderName}/${folderName}.11`, text, (err) => {
+      if (err) {
+        console.error("Error writing file:", err);
+        return;
+      }
+      console.log("Text file created with fixed spaces.");
+    });
     // res.send(Buffer.from(modifiedPdfBytes));
     res.status(200).json({
-      status:'Success',
+      status: 'Success',
       message: 'Folder create successfully.',
       folderPath: rootFolder
     })
