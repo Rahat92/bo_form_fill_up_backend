@@ -1,8 +1,9 @@
 const express = require('express');
+const dotenv = require('dotenv')
 const axios = require('axios')
 const officegen = require('officegen');
 const { AlignmentType, Document, Footer, Header, HeadingLevel, Packer, Paragraph, TextRun, UnderlineType, Table, TableCell, TableRow, addLineBreak } = require('docx');
-
+dotenv.config()
 const cors = require('cors')
 const { PDFDocument, rgb, setCharacterSpacing } = require('pdf-lib'); // Import pdf-lib
 const fontKit = require('@pdf-lib/fontkit')
@@ -38,7 +39,7 @@ app.post('/modify-pdf', async (req, res) => {
   // Add words at specified absolute column positions
   line02 = placeWordAtFixedColumn(line02, "Hello", 1);
   line02 = placeWordAtFixedColumn(line02, "world", 16);
-  line02 = placeWordAtFixedColumn(line02, "How", 31);
+  line02 = placeWordAtFixedColumn(line02, "How", 61);
   
   // Write the line to a text file
   fs.writeFile("FixedColumnText.11", line01+"\n"+line02+"\n", (err) => {
@@ -50,7 +51,8 @@ app.post('/modify-pdf', async (req, res) => {
   });
   // Generate Text file
   const testWord = "Rahatt"
-  const rootFolder = 'C:\\Users\\ASUS\\Desktop\\BO'
+  const rootFolder = process.env.FOLDER_NAME;
+  console.log(rootFolder)
   const folderName = req.body.clientId;
   const text = `0000007Admin 018900\n` +
     `01000001\n` +
