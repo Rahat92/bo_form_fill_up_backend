@@ -14,66 +14,75 @@ app.use(express.json())
 app.use(cors({ origin: ["http://157.142.6.2:8082", "http://localhost:3000", "http://157.142.6.2:8080", "http://localhost:8080"] }))
 app.post('/modify-pdf', async (req, res) => {
 
+  const folderName = req.body.clientId;
+  const rootFolder = process.env.FOLDER_NAME;
   function placeWordAtFixedColumn(line, word, column) {
     // Ensure the line has enough spaces to reach the desired column
     if (line.length < column - 1) {
       line += " ".repeat(column - 1 - line.length);
     }
-    
+
     // Place the word at the exact column position
     line = line.slice(0, column - 1) + word + line.slice(column - 1 + word.length);
-    
+
     return line;
   }
-  
+
   // Start with an empty line
   let line01 = "";
-  
+
   // Add words at specified absolute column positions
-  line01 = placeWordAtFixedColumn(line01, "Hello", 1);
-  line01 = placeWordAtFixedColumn(line01, "world", 16);
-  line01 = placeWordAtFixedColumn(line01, "How", 31);
-  line01 = placeWordAtFixedColumn(line01, "", 40);
+  line01 = placeWordAtFixedColumn(line01, "0000007Admin 018900", 1);
+
   let line02 = "";
-  
+
   // Add words at specified absolute column positions
-  line02 = placeWordAtFixedColumn(line02, "Hello", 1);
-  line02 = placeWordAtFixedColumn(line02, "world", 16);
-  line02 = placeWordAtFixedColumn(line02, "How", 61);
+  line02 = placeWordAtFixedColumn(line02, "01000001", 1);
+
+
+
+  let line03 = "";
+
+  // Add words at specified absolute column positions
+  line03 = placeWordAtFixedColumn(line03, `02YY${folderName}`, 1);
+  line03 = placeWordAtFixedColumn(line03, `${req.body.clientBankAccountNumber}`, 141);
+  line03 = placeWordAtFixedColumn(line03, `Y${req.body.clientBankRoutingNumber}`, 157);
+  line03 = placeWordAtFixedColumn(line03, "", 290);
+
+
+  let line04 = "";
+
+  line04 = placeWordAtFixedColumn(line04, `030101BAN25081990`, 1);
+  line04 = placeWordAtFixedColumn(line04, `${req.body.clientGender==='Male'?'M':'F'}`, 58);
+  line04 = placeWordAtFixedColumn(line04, "", 84);
+
+
+  let line05 = "";
+
+  line05 = placeWordAtFixedColumn(line05, `04MUKTA`, 1);
+  line05 = placeWordAtFixedColumn(line05, `AKTER`, 133);
+  line05 = placeWordAtFixedColumn(line05, "MUKTA AKTER", 163);
+  line05 = placeWordAtFixedColumn(line05, `TA-200/1 SOUTH BADDA`, 283);
+  line05 = placeWordAtFixedColumn(line05, `GULSHAN.DHAKA-1212`, 313);
+  line05 = placeWordAtFixedColumn(line05, `DHAKA`, 373);
+  line05 = placeWordAtFixedColumn(line05, `DHAKA`, 398);
+  line05 = placeWordAtFixedColumn(line05, `BANGLADESH`, 423);
+  line05 = placeWordAtFixedColumn(line05, `1212`, 444);
+  line05 = placeWordAtFixedColumn(line05, `01985336212`, 458);
+  line05 = placeWordAtFixedColumn(line05, `mdmahabuburrahmansir@gmail.com`, 518);
+  line05 = placeWordAtFixedColumn(line05, `MOHAMMAD MAHABUBUR RAHMAN`, 598);
+  line05 = placeWordAtFixedColumn(line05, `MOJIDA BEGUM`, 628);
+  line05 = placeWordAtFixedColumn(line05, `YHOUSE WIFE`, 729);
+  line05 = placeWordAtFixedColumn(line05, `9104812590`, 760);
+  line05 = placeWordAtFixedColumn(line05, "", 780);
+
+  let line06 = "";
+
+  line06 = placeWordAtFixedColumn(line06, '070101G100420101.jpg', 1)
+
   
-  // Write the line to a text file
-  fs.writeFile("FixedColumnText.11", line01+"\n"+line02+"\n", (err) => {
-    if (err) {
-      console.error("Error writing file:", err);
-      return;
-    }
-    console.log("Text file created with words at fixed columns.");
-  });
-  // Generate Text file
-  const testWord = "Rahatt"
-  const rootFolder = process.env.FOLDER_NAME;
-  console.log(rootFolder)
-  const folderName = req.body.clientId;
-  const text = `0000007Admin 018900\n` +
-    `01000001\n` +
-    `02YYG10042${" ".repeat(130)}1121001678104${" ".repeat(3)}Y140261725${" ".repeat(123)}\n` +
-    `030101BAN25081990${" ".repeat(40)}F${" ".repeat(25)}\n` +
-    `04MUKTA${" ".repeat(125)}AKTER${" ".repeat(25)}MUKTA AKTER${" ".repeat(109)}TA-200/1 SOUTH BADDA${" ".repeat(10)}GULSHAN.DHAKA-1212${" ".repeat(42)}DHAKA${" ".repeat(20)}DHAKA${" ".repeat(20)}BANGLADESH${" ".repeat(15)}1212${" ".repeat(6)}01985336212${" ".repeat(49)}mdmahabuburrahmansir@gmail.com${" ".repeat(50)}MOHAMMAD MAHABUBUR RAHMAN${" ".repeat(5)}MOJIDA BEGUM${" ".repeat(89)}YHOUSE WIFE${" ".repeat(20)}9104812590${" ".repeat(10)}\n` +
-    `05${" ".repeat(240)}\n` +
-    `06${" ".repeat(240)}\n` +
-    `070101G100420101.jpg${" ".repeat(36)}\n`
-    ;
 
-
-  // fs.readFile("FixedSpaceText.txt", "utf8", (err, data) => {
-  //   if (err) {
-  //     console.error("Error reading file:", err);
-  //     return;
-  //   }
-    
-  //   const lineCount = data.split(/\r?\n/).length;
-     
-  // });
+  
   let docx = officegen('docx')
 
   // Officegen calling this function after finishing to generate the docx document:
@@ -108,65 +117,6 @@ app.post('/modify-pdf', async (req, res) => {
   })
 
 
-  // // pObj.addText(' and back color.', { color: '00ffff', back: '000088' })
-
-
-
-  // pObj.addText('Since ')
-  // pObj.addText('officegen 0.2.12', {
-  //   back: '00ffff',
-  //   shdType: 'pct12',
-  //   shdColor: 'ff0000'
-  // }) // Use pattern in the background.
-  // pObj.addText(' you can do ')
-  // pObj.addText('more cool ', { highlight: true }) // Highlight!
-  // pObj.addText('stuff!', { highlight: 'darkGreen' }) // Different highlight color.
-
-  // pObj = docx.createP()
-
-  // pObj.addText('Even add ')
-  // pObj.addText('external link', { link: 'https://github.com' })
-  // pObj.addText('!')
-
-  // pObj = docx.createP()
-
-  // pObj.addText('Bold + underline', { bold: true, underline: true })
-
-  // pObj = docx.createP({ align: 'center' })
-
-  // pObj.addText('Center this text', {
-  //   border: 'dotted',
-  //   borderSize: 12,
-  //   borderColor: '88CCFF'
-  // })
-
-  // pObj = docx.createP()
-  // pObj.options.align = 'right'
-
-  // pObj.addText('Align this text to the right.')
-
-  // pObj = docx.createP()
-
-  // pObj.addText('Those two lines are in the same paragraph,')
-  // pObj.addLineBreak()
-  // pObj.addText('but they are separated by a line break.')
-
-  // docx.putPageBreak()
-
-  // pObj = docx.createP()
-
-  // pObj.addText('Fonts face only.', { font_face: 'Arial' })
-  // pObj.addText(' Fonts face and size.', { font_face: 'Arial', font_size: 40 })
-
-  // docx.putPageBreak()
-
-  // pObj = docx.createP()
-
-  // // We can even add images:
-  // pObj.addImage('images/M0123.png')
-
-  // Let's generate the Word document into a file:
-
   let out = fs.createWriteStream(`${rootFolder}\\${folderName}\\${folderName}.docx`)
 
   out.on('error', function (err) {
@@ -197,16 +147,22 @@ app.post('/modify-pdf', async (req, res) => {
       message: 'Already exist a folder with same name'
     })
   }
+  fs.writeFile(`${rootFolder}\\${folderName}/${folderName}.11`, line01 + "\n" + line02 + "\n" + line03 + "\n" + line04 + "\n" + line05 + "\n" + line06 + "\n", (err) => {
+    if (err) {
+      console.error("Error writing file:", err);
+      return;
+    }
+    console.log("Text file created with words at fixed columns.");
+  });
   try {
-    const existingPdfBytes = fs.readFileSync(__dirname + "/BO_Account_Open_Form.pdf"); // Update with your file path
+    const existingPdfBytes = fs.readFileSync(__dirname + "/BO_Account_Open_Form.pdf"); 
 
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     pdfDoc.registerFontkit(fontKit)
-    // Get the first page of the existing PDF (or another page if needed)
     const pages = pdfDoc.getPages();
-    const firstPage = pages[0]; // Modify this page or loop through other pages
+    const firstPage = pages[0]; 
     const { width, height } = firstPage.getSize();
-    const secondPage = pages[1]; // Modify this page or loop through other pages
+    const secondPage = pages[1]; 
     const { width: secondPageWidth, height: secondPageHeight } = secondPage.getSize();
     const fetchImage = async (url) => {
       const response = await axios.get(url, { responseType: 'arraybuffer' });
@@ -248,13 +204,13 @@ app.post('/modify-pdf', async (req, res) => {
       })
       let signature;
       try {
-        signature = await pdfDoc.embedPng(signatureBytes); // Try to embed as PNG
+        signature = await pdfDoc.embedPng(signatureBytes); 
       } catch (error) {
-        signature = await pdfDoc.embedJpg(signatureBytes); // Fallback to JPG
+        signature = await pdfDoc.embedJpg(signatureBytes); 
       }
       secondPage.drawImage(signature, {
-        x: 400, // Position the image
-        y: secondPageHeight - 645.5, // Position from the top
+        x: 400, 
+        y: secondPageHeight - 645.5, 
         width: 102,
         height: 19
       })
@@ -290,13 +246,13 @@ app.post('/modify-pdf', async (req, res) => {
       })
       let jointApplicantSignature;
       try {
-        jointApplicantSignature = await pdfDoc.embedPng(jointApplicantSignatureBytes); // Try to embed as PNG
+        jointApplicantSignature = await pdfDoc.embedPng(jointApplicantSignatureBytes); 
       } catch (error) {
-        jointApplicantSignature = await pdfDoc.embedJpg(jointApplicantSignatureBytes); // Fallback to JPG
+        jointApplicantSignature = await pdfDoc.embedJpg(jointApplicantSignatureBytes);
       }
       secondPage.drawImage(jointApplicantSignature, {
-        x: 400, // Position the image
-        y: secondPageHeight - 669, // Position from the top
+        x: 400, 
+        y: secondPageHeight - 669,
         width: 102,
         height: 18
       })
@@ -314,13 +270,13 @@ app.post('/modify-pdf', async (req, res) => {
       })
       let jointApplicantPhoto;
       try {
-        jointApplicantPhoto = await pdfDoc.embedPng(jointApplicantPhotoBytes); // Try to embed as PNG
+        jointApplicantPhoto = await pdfDoc.embedPng(jointApplicantPhotoBytes);
       } catch (error) {
-        jointApplicantPhoto = await pdfDoc.embedJpg(jointApplicantPhotoBytes); // Fallback to JPG
+        jointApplicantPhoto = await pdfDoc.embedJpg(jointApplicantPhotoBytes); 
       }
       secondPage.drawImage(jointApplicantPhoto, {
-        x: 263, // Position the image
-        y: secondPageHeight - 460.5, // Position from the top
+        x: 263,
+        y: secondPageHeight - 460.5, 
         width: 102,
         height: 105
       })
@@ -373,14 +329,14 @@ app.post('/modify-pdf', async (req, res) => {
           y: height - y,
           size: size - 8,
           font: customFont,
-          color: rgb(color.r, color.g, color.b), // Red color
+          color: rgb(color.r, color.g, color.b),
         });
       } else {
         page.drawText(content, {
           x: x,
           y: height - y,
           size: size,
-          color: rgb(color.r, color.g, color.b), // Red color
+          color: rgb(color.r, color.g, color.b),
         });
       }
     }
@@ -503,13 +459,13 @@ app.post('/modify-pdf', async (req, res) => {
         console.log('pdf saved!')
       }
     })
-    fs.writeFile(`${rootFolder}\\${folderName}/${folderName}.11`, text, (err) => {
-      if (err) {
-        console.error("Error writing file:", err);
-        return;
-      }
-      console.log("Text file created with fixed spaces.");
-    });
+    // fs.writeFile(`${rootFolder}\\${folderName}/${folderName}.11`, text, (err) => {
+    //   if (err) {
+    //     console.error("Error writing file:", err);
+    //     return;
+    //   }
+    //   console.log("Text file created with fixed spaces.");
+    // });
     // res.send(Buffer.from(modifiedPdfBytes));
     res.status(200).json({
       status: 'Success',
