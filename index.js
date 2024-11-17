@@ -169,51 +169,60 @@ app.post('/modify-pdf', async (req, res) => {
       return response.data;
     };
     if (req.body.clientPhoto) {
+
       const imageBytes = await fetchImage(req.body.clientPhoto);
-      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-photo.jpg`, imageBytes, err => {
+      const fileExtension = getFileExtension(req.body.clientPhoto)
+
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-photo.${fileExtension}`, imageBytes, err => {
         if (err) {
           console.log(err)
         }
       })
       let image;
-      try {
-        image = await pdfDoc.embedPng(imageBytes);
-      } catch (error) {
-        console.error('Error embedding PNG:', error);
+      if(fileExtension!='pdf'){
         try {
-          image = await pdfDoc.embedJpg(imageBytes);
+          image = await pdfDoc.embedPng(imageBytes);
         } catch (error) {
-          console.error('Error embedding JPG:', error);
-          throw new Error('Failed to embed image as either PNG or JPG.');
+          console.error('Error embedding PNG:', error);
+          try {
+            image = await pdfDoc.embedJpg(imageBytes);
+          } catch (error) {
+            console.error('Error embedding JPG:', error);
+            throw new Error('Failed to embed image as either PNG or JPG.');
+          }
         }
+        secondPage.drawImage(image, {
+          x: 92,
+          y: secondPageHeight - 460.5,
+          width: 102,
+          height: 105
+        })
       }
-      secondPage.drawImage(image, {
-        x: 92,
-        y: secondPageHeight - 460.5,
-        width: 102,
-        height: 105
-      })
     }
 
     if (req.body.clientSignature) {
       const signatureBytes = await fetchImage(req.body.clientSignature)
-      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-signature.jpg`, signatureBytes, err => {
+      const fileExtension = getFileExtension(req.body.clientSignature)
+
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-signature.${fileExtension}`, signatureBytes, err => {
         if (err) {
           console.log(err)
         }
       })
       let signature;
-      try {
-        signature = await pdfDoc.embedPng(signatureBytes); 
-      } catch (error) {
-        signature = await pdfDoc.embedJpg(signatureBytes); 
+      if(fileExtension!='pdf'){
+        try {
+          signature = await pdfDoc.embedPng(signatureBytes); 
+        } catch (error) {
+          signature = await pdfDoc.embedJpg(signatureBytes); 
+        }
+        secondPage.drawImage(signature, {
+          x: 400, 
+          y: secondPageHeight - 645.5, 
+          width: 102,
+          height: 19
+        })
       }
-      secondPage.drawImage(signature, {
-        x: 400, 
-        y: secondPageHeight - 645.5, 
-        width: 102,
-        height: 19
-      })
     }
     if (req.body.clientNidPhoto) {
       const fileExtension = getFileExtension(req.body.clientNidPhoto)
@@ -229,6 +238,7 @@ app.post('/modify-pdf', async (req, res) => {
       const fileExtension = getFileExtension(req.body.clientNominyPhoto)
 
       const clientNomineePhotoBytes = await fetchImage(req.body.clientNominyPhoto)
+      console.log('Hello ', clientNomineePhotoBytes)
       fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-nominee.${fileExtension}`, clientNomineePhotoBytes, err => {
         if (err) {
           console.log(err)
