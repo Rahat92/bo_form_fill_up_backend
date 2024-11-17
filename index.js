@@ -12,6 +12,14 @@ const path = require('path');
 const app = express();
 app.use(express.json())
 app.use(cors({ origin: ["http://157.142.6.2:8082", "http://localhost:3000", "http://157.142.6.2:8080", "http://localhost:8080"] }))
+app.use((req, res, next) => {
+  if (req.method == 'POST') {
+    res.set('Cache-Control', 'no-store');
+    res.set('Pragma', 'no-cache');
+    res.set('Expires', '0');
+  }
+  next();
+});
 app.post('/modify-pdf', async (req, res) => {
 
   function placeWordAtFixedColumn(line, word, column) {
