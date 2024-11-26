@@ -178,13 +178,13 @@ app.post('/modify-pdf', async (req, res) => {
       return response.data;
     };
 
-    const img = await fetchImage(req.body.clientCroppedSignature)
-    console.log(img)
-    fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-cropped-sign.jpg`, img,err => {
-      if(err){
-          console.log('myerror', err)
-      }
-    })
+    // const img = await fetchImage(req.body.clientCroppedSignature)
+    // console.log(img)
+    // fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-cropped-sign.jpg`, img,err => {
+    //   if(err){
+    //       console.log('myerror', err)
+    //   }
+    // })
     if (req.body.clientPhoto) {
 
       const imageBytes = await fetchImage(req.body.clientPhoto);
