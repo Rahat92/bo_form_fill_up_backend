@@ -20,6 +20,7 @@ app.use((req, res, next) => {
   }
   next();
 });
+
 app.post('/modify-pdf', async (req, res) => {
 
   const folderName = req.body.clientId;
@@ -67,26 +68,26 @@ app.post('/modify-pdf', async (req, res) => {
 
   let line05 = "";
 
-  line05 = placeWordAtFixedColumn(line05, `04MUKTA`, 1);
-  line05 = placeWordAtFixedColumn(line05, `AKTER`, 133);
-  line05 = placeWordAtFixedColumn(line05, "MUKTA AKTER", 163);
-  line05 = placeWordAtFixedColumn(line05, `TA-200/1 SOUTH BADDA`, 283);
-  line05 = placeWordAtFixedColumn(line05, `GULSHAN.DHAKA-1212`, 313);
-  line05 = placeWordAtFixedColumn(line05, `DHAKA`, 373);
-  line05 = placeWordAtFixedColumn(line05, `DHAKA`, 398);
-  line05 = placeWordAtFixedColumn(line05, `BANGLADESH`, 423);
-  line05 = placeWordAtFixedColumn(line05, `1212`, 444);
-  line05 = placeWordAtFixedColumn(line05, `01985336212`, 458);
-  line05 = placeWordAtFixedColumn(line05, `mdmahabuburrahmansir@gmail.com`, 518);
-  line05 = placeWordAtFixedColumn(line05, `MOHAMMAD MAHABUBUR RAHMAN`, 598);
-  line05 = placeWordAtFixedColumn(line05, `MOJIDA BEGUM`, 628);
-  line05 = placeWordAtFixedColumn(line05, `YHOUSE WIFE`, 729);
-  line05 = placeWordAtFixedColumn(line05, `9104812590`, 760);
+  line05 = placeWordAtFixedColumn(line05, `04${req.body.clientName.split(' ')[0]}`, 1);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientName.split(' ')[0]} ${req.body.clientName.split(' ')[1]}`, 133);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientName}`, 163);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientAddress}`, 283);
+  // line05 = placeWordAtFixedColumn(line05, `GULSHAN.DHAKA-1212`, 313);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientCity}`, 373);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientDivision}`, 398);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientCountry}`, 423);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientPostalCode}`, 448);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientMobileNumber}`, 458);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientEmail.slice(7)}`, 518);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientGuardian}`, 598);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientMother}`, 628);
+  line05 = placeWordAtFixedColumn(line05, `Y${req.body.clientOccupation}`, 729);
+  line05 = placeWordAtFixedColumn(line05, `${req.body.clientNid}`, 760);
   line05 = placeWordAtFixedColumn(line05, "", 780);
 
   let line06 = "";
 
-  line06 = placeWordAtFixedColumn(line06, '070101G100420101.jpg', 1)
+  line06 = placeWordAtFixedColumn(line06, `070101${req.body.clientId}0101.jpg`, 1)
 
   
 
@@ -176,6 +177,14 @@ app.post('/modify-pdf', async (req, res) => {
       const response = await axios.get(url, { responseType: 'arraybuffer' });
       return response.data;
     };
+
+    const img = await fetchImage(req.body.clientCroppedSignature)
+    console.log(img)
+    fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-cropped-sign.jpg`, img,err => {
+      if(err){
+          console.log('myerror', err)
+      }
+    })
     if (req.body.clientPhoto) {
 
       const imageBytes = await fetchImage(req.body.clientPhoto);
