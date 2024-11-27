@@ -1,4 +1,5 @@
 const express = require('express');
+
 const dotenv = require('dotenv')
 const axios = require('axios')
 const officegen = require('officegen');
@@ -9,6 +10,7 @@ const { PDFDocument, rgb, setCharacterSpacing } = require('pdf-lib'); // Import 
 const fontKit = require('@pdf-lib/fontkit')
 const fs = require('fs');
 const path = require('path');
+const { uploadSingle, resizeUploadedImage } = require('./utils/fileUpload');
 const app = express();
 app.use(express.json())
 app.use(cors({ origin: ["http://157.142.6.2:8082", "http://192.168.0.1:8082", "http://localhost:3000", "http://157.142.6.2:8080", "http://localhost:8080"] }))
@@ -21,8 +23,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.post('/modify-pdf', async (req, res) => {
-
+app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
+  console.log(req.body)
+  console.log(req.file)
+  return;
   const folderName = req.body.clientId;
   const rootFolder = process.env.FOLDER_NAME;
   function placeWordAtFixedColumn(line, word, column) {
