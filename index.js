@@ -1,5 +1,5 @@
 const express = require('express');
-
+const JSZip = require('jszip');
 const dotenv = require('dotenv')
 const axios = require('axios')
 const officegen = require('officegen');
@@ -22,13 +22,45 @@ app.use((req, res, next) => {
   }
   next();
 });
-
-app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
+const zip = new JSZip();
+app.post('/modify-pdf', uploadSingle, resizeUploadedImage, async (req, res) => {
   console.log(req.body)
   console.log(req.file)
-  return;
+  // return;
   const folderName = req.body.clientId;
   const rootFolder = process.env.FOLDER_NAME;
+
+
+
+  if (!fs.existsSync(`${rootFolder}\\${folderName}`)) {
+    fs.mkdirSync(path.join(`${rootFolder}`, folderName), (err) => {
+      if (err) {
+        console.log(err)
+      } else {
+        console.log('Folder is written')
+      }
+    })
+  } else {
+
+    return res.status(400).json({
+      status: 'Fail',
+      message: 'Already exist a folder with same name'
+    })
+  }
+  try {
+    const signImageBuffer = fs.readFileSync(`${__dirname}/public/sign.jpg`);
+    zip.file(`${req.body.clientId}0101.jpg`, signImageBuffer);
+
+    zip.generateNodeStream({ type: 'nodebuffer', streamFiles: false })
+      .pipe(fs.createWriteStream(`${rootFolder}\\${folderName}/${req.body.clientId}0101.zip`))
+      .on('finish', function () {
+        console.log("sample.zip written.");
+      });
+
+  } catch (err) {
+    console.error(err)
+  }
+
   function placeWordAtFixedColumn(line, word, column) {
     // Ensure the line has enough spaces to reach the desired column
     if (line.length < column - 1) {
@@ -65,8 +97,8 @@ app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
 
   let line04 = "";
 
-  line04 = placeWordAtFixedColumn(line04, `030101BAN25081990`, 1);
-  line04 = placeWordAtFixedColumn(line04, `${req.body.clientGender==='Male'?'M':'F'}`, 58);
+  line04 = placeWordAtFixedColumn(line04, `030101BAN${req.body.clientDateOfBirth}`, 1);
+  line04 = placeWordAtFixedColumn(line04, `${req.body.clientGender === 'Male' ? 'M' : 'F'}`, 58);
   line04 = placeWordAtFixedColumn(line04, "", 84);
 
 
@@ -93,9 +125,9 @@ app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
 
   line06 = placeWordAtFixedColumn(line06, `070101${req.body.clientId}0101.jpg`, 1)
 
-  
 
-  
+
+
   let docx = officegen('docx')
 
   // Officegen calling this function after finishing to generate the docx document:
@@ -144,22 +176,7 @@ app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
     const fileExtension = fileName.split('.')[fileName.split('.').length - 1];
     return fileExtension;
   }
-  console.log(req.body)
-  if (!fs.existsSync(`${rootFolder}\\${folderName}`)) {
-    fs.mkdirSync(path.join(`${rootFolder}`, folderName), (err) => {
-      if (err) {
-        console.log(err)
-      } else {
-        console.log('Folder is written')
-      }
-    })
-  } else {
 
-    return res.status(400).json({
-      status: 'Fail',
-      message: 'Already exist a folder with same name'
-    })
-  }
   fs.writeFile(`${rootFolder}\\${folderName}/${folderName}.11`, line01 + "\n" + line02 + "\n" + line03 + "\n" + line04 + "\n" + line05 + "\n" + line06 + "\n", (err) => {
     if (err) {
       console.error("Error writing file:", err);
@@ -168,14 +185,14 @@ app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
     console.log("Text file created with words at fixed columns.");
   });
   try {
-    const existingPdfBytes = fs.readFileSync(__dirname + "/BO_Account_Open_Form.pdf"); 
+    const existingPdfBytes = fs.readFileSync(__dirname + "/BO_Account_Open_Form.pdf");
 
     const pdfDoc = await PDFDocument.load(existingPdfBytes);
     pdfDoc.registerFontkit(fontKit)
     const pages = pdfDoc.getPages();
-    const firstPage = pages[0]; 
+    const firstPage = pages[0];
     const { width, height } = firstPage.getSize();
-    const secondPage = pages[1]; 
+    const secondPage = pages[1];
     const { width: secondPageWidth, height: secondPageHeight } = secondPage.getSize();
     const fetchImage = async (url) => {
       const response = await axios.get(url, { responseType: 'arraybuffer' });
@@ -200,7 +217,7 @@ app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
         }
       })
       let image;
-      if(fileExtension!='pdf'){
+      if (fileExtension != 'pdf') {
         try {
           image = await pdfDoc.embedPng(imageBytes);
         } catch (error) {
@@ -223,6 +240,7 @@ app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
 
     if (req.body.clientSignature) {
       const signatureBytes = await fetchImage(req.body.clientSignature)
+      // const signImageBuffer = fs.readFileSync(`${__dirname}/public/sign.jpg`);
       const fileExtension = getFileExtension(req.body.clientSignature)
 
       fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-signature.${fileExtension}`, signatureBytes, err => {
@@ -230,31 +248,23 @@ app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
           console.log(err)
         }
       })
-      let signature;
-      if(fileExtension!='pdf'){
-        try {
-          signature = await pdfDoc.embedPng(signatureBytes); 
-        } catch (error) {
-          signature = await pdfDoc.embedJpg(signatureBytes); 
-        }
-        secondPage.drawImage(signature, {
-          x: 400, 
-          y: secondPageHeight - 645.5, 
-          width: 102,
-          height: 19
-        })
-      }
+      // secondPage.drawImage(`${__dirname}/public/sign.jpg`, {
+      //   x: 400,
+      //   y: secondPageHeight - 645.5,
+      //   width: 102,
+      //   height: 19
+      // })
     }
-    if (req.body.clientNidPhoto) {
-      const fileExtension = getFileExtension(req.body.clientNidPhoto)
-      const clientNidPhotoBytes = await fetchImage(req.body.clientNidPhoto)
+    // if (req.body.clientNidPhoto) {
+    //   const fileExtension = getFileExtension(req.body.clientNidPhoto)
+    //   const clientNidPhotoBytes = await fetchImage(req.body.clientNidPhoto)
 
-      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-nid.${fileExtension}`, clientNidPhotoBytes, err => {
-        if (err) {
-          console.log(err)
-        }
-      })
-    }
+    //   fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-nid.${fileExtension}`, clientNidPhotoBytes, err => {
+    //     if (err) {
+    //       console.log(err)
+    //     }
+    //   })
+    // }
     if (req.body.clientNominyPhoto) {
       const fileExtension = getFileExtension(req.body.clientNominyPhoto)
 
@@ -266,52 +276,52 @@ app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
         }
       })
     }
-    if (req.body.jointApplicantSign) {
-      const fileExtension = getFileExtension(req.body.jointApplicantSign)
+    // if (req.body.jointApplicantSign) {
+    //   const fileExtension = getFileExtension(req.body.jointApplicantSign)
 
-      const jointApplicantSignatureBytes = await fetchImage(req.body.jointApplicantSign)
-      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-sign.${fileExtension}`, jointApplicantSignatureBytes, err => {
-        if (err) {
-          console.log(err)
-        }
-      })
-      let jointApplicantSignature;
-      try {
-        jointApplicantSignature = await pdfDoc.embedPng(jointApplicantSignatureBytes); 
-      } catch (error) {
-        jointApplicantSignature = await pdfDoc.embedJpg(jointApplicantSignatureBytes);
-      }
-      secondPage.drawImage(jointApplicantSignature, {
-        x: 400, 
-        y: secondPageHeight - 669,
-        width: 102,
-        height: 18
-      })
-    }
+    //   const jointApplicantSignatureBytes = await fetchImage(req.body.jointApplicantSign)
+    //   fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-sign.${fileExtension}`, jointApplicantSignatureBytes, err => {
+    //     if (err) {
+    //       console.log(err)
+    //     }
+    //   })
+    //   let jointApplicantSignature;
+    //   try {
+    //     jointApplicantSignature = await pdfDoc.embedPng(jointApplicantSignatureBytes); 
+    //   } catch (error) {
+    //     jointApplicantSignature = await pdfDoc.embedJpg(jointApplicantSignatureBytes);
+    //   }
+    //   secondPage.drawImage(jointApplicantSignature, {
+    //     x: 400, 
+    //     y: secondPageHeight - 669,
+    //     width: 102,
+    //     height: 18
+    //   })
+    // }
 
-    if (req.body.jointApplicantPhoto) {
-      const fileExtension = getFileExtension(req.body.jointApplicantPhoto)
+    // if (req.body.jointApplicantPhoto) {
+    //   const fileExtension = getFileExtension(req.body.jointApplicantPhoto)
 
-      const jointApplicantPhotoBytes = await fetchImage(req.body.jointApplicantPhoto)
+    //   const jointApplicantPhotoBytes = await fetchImage(req.body.jointApplicantPhoto)
 
-      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-photo.${fileExtension}`, jointApplicantPhotoBytes, err => {
-        if (err) {
-          console.log(err)
-        }
-      })
-      let jointApplicantPhoto;
-      try {
-        jointApplicantPhoto = await pdfDoc.embedPng(jointApplicantPhotoBytes);
-      } catch (error) {
-        jointApplicantPhoto = await pdfDoc.embedJpg(jointApplicantPhotoBytes); 
-      }
-      secondPage.drawImage(jointApplicantPhoto, {
-        x: 263,
-        y: secondPageHeight - 460.5, 
-        width: 102,
-        height: 105
-      })
-    }
+    //   fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-photo.${fileExtension}`, jointApplicantPhotoBytes, err => {
+    //     if (err) {
+    //       console.log(err)
+    //     }
+    //   })
+    //   let jointApplicantPhoto;
+    //   try {
+    //     jointApplicantPhoto = await pdfDoc.embedPng(jointApplicantPhotoBytes);
+    //   } catch (error) {
+    //     jointApplicantPhoto = await pdfDoc.embedJpg(jointApplicantPhotoBytes); 
+    //   }
+    //   secondPage.drawImage(jointApplicantPhoto, {
+    //     x: 263,
+    //     y: secondPageHeight - 460.5, 
+    //     width: 102,
+    //     height: 105
+    //   })
+    // }
 
     if (req.body.clientBankDepositeScreenShot) {
       const fileExtension = getFileExtension(req.body.clientBankDepositeScreenShot)
@@ -378,7 +388,7 @@ app.post('/modify-pdf',uploadSingle, resizeUploadedImage, async (req, res) => {
       generateAndPlaceText(secondPage, 'name', req.body.clientName, 125, 640.8, 12, { r: 0, g: 0, b: 0 }, 0, '');
     }
 
-    if (req.body.jointApplicantName) {
+    if (req.body.jointApplicantName !== 'undefined') {
       generateAndPlaceText(secondPage, 'name', req.body.jointApplicantName, 125, 665.8, 12, { r: 0, g: 0, b: 0 }, 0, '');
       generateAndPlaceText(firstPage, 'name', req.body.jointApplicantName, 150, 805.8, 10, { r: 0, g: 0, b: 0 }, 0, '');
     }
