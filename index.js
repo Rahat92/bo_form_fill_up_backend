@@ -22,9 +22,10 @@ app.use((req, res, next) => {
   }
   next();
 });
-const zip = new JSZip();
+
 app.post('/modify-pdf', uploadSingle, resizeUploadedImage, async (req, res) => {
-  console.log(req.body)
+  const zip = new JSZip();
+  const result = JSON.parse(req.body.fields)
   console.log(req.file)
   // return;
   const folderName = req.body.clientId;
@@ -51,7 +52,7 @@ app.post('/modify-pdf', uploadSingle, resizeUploadedImage, async (req, res) => {
     const signImageBuffer = fs.readFileSync(`${__dirname}/public/sign.jpg`);
     zip.file(`${req.body.clientId}0101.jpg`, signImageBuffer);
 
-    zip.generateNodeStream({ type: 'nodebuffer', streamFiles: false })
+    zip.generateNodeStream({ type: 'nodebuffer', streamFiles: true })
       .pipe(fs.createWriteStream(`${rootFolder}\\${folderName}/${req.body.clientId}0101.zip`))
       .on('finish', function () {
         console.log("sample.zip written.");
@@ -121,9 +122,19 @@ app.post('/modify-pdf', uploadSingle, resizeUploadedImage, async (req, res) => {
   line05 = placeWordAtFixedColumn(line05, `${req.body.clientNid}`, 760);
   line05 = placeWordAtFixedColumn(line05, "", 780);
 
-  let line06 = "";
 
-  line06 = placeWordAtFixedColumn(line06, `070101${req.body.clientId}0101.jpg`, 1)
+  let line06 ="";
+  line06= placeWordAtFixedColumn(line06, "05",1)
+  line06= placeWordAtFixedColumn(line06, "",243)
+  let line07 = "";
+  line07 = placeWordAtFixedColumn(line07, "06",1)
+  line07 = placeWordAtFixedColumn(line07, "",243)
+  // line06 = placeWordAtFixedColumn(line07, "")
+
+  let line08 = "";
+
+  line08 = placeWordAtFixedColumn(line08, `070101${req.body.clientId}0101.jpg`, 1)
+  line08 = placeWordAtFixedColumn(line08, "", 57)
 
 
 
@@ -151,13 +162,13 @@ app.post('/modify-pdf', uploadSingle, resizeUploadedImage, async (req, res) => {
   })
   pObj = docx.createP()
 
-  Object.keys(req.body.fields).forEach((item, index) => {
-    pObj.addText(Object.keys(req.body.fields)[index], {
+  Object.keys(result).forEach((item, index) => {
+    pObj.addText(Object.keys(result)[index], {
       bold: true,
       underline: true
     })
     pObj.addLineBreak()
-    pObj.addText(Object.values(req.body.fields)[index])
+    pObj.addText(Object.values(result)[index])
     pObj = docx.createP()
   })
 
@@ -177,13 +188,23 @@ app.post('/modify-pdf', uploadSingle, resizeUploadedImage, async (req, res) => {
     return fileExtension;
   }
 
-  fs.writeFile(`${rootFolder}\\${folderName}/${folderName}.11`, line01 + "\n" + line02 + "\n" + line03 + "\n" + line04 + "\n" + line05 + "\n" + line06 + "\n", (err) => {
-    if (err) {
-      console.error("Error writing file:", err);
-      return;
-    }
-    console.log("Text file created with words at fixed columns.");
-  });
+  // fs.writeFile(`${rootFolder}\\${folderName}/${folderName}.11`, line01 + "\n" + line02 + "\n" + line03 + "\n" + line04 + "\n" + line05 + "\n" + line06 + "\n", (err) => {
+  //   if (err) {
+  //     console.error("Error writing file:", err);
+  //     return;
+  //   }
+  //   console.log("Text file created with words at fixed columns.");
+  // });
+
+  fs.writeFile(`${rootFolder}\\${folderName}\\${folderName}.11`, 
+    line01 + "\r\n" + line02 + "\r\n" + line03 + "\r\n" + line04 + "\r\n" + line05 + "\r\n" + line06 + "\r\n" + line07 + "\r\n" + line08, 
+    (err) => {
+      if (err) {
+        console.error("Error writing file:", err);
+        return;
+      }
+      console.log("Text file created with words at fixed columns.");
+    });
   try {
     const existingPdfBytes = fs.readFileSync(__dirname + "/BO_Account_Open_Form.pdf");
 
@@ -207,35 +228,36 @@ app.post('/modify-pdf', uploadSingle, resizeUploadedImage, async (req, res) => {
     //   }
     // })
     if (req.body.clientPhoto) {
-
-      const imageBytes = await fetchImage(req.body.clientPhoto);
+      const response = await axios.get(req.body.clientPhoto, { responseType: 'arraybuffer' });
+      const imageBytes = response.data;
+      // const imageBytes = await fetchImage(req.body.clientPhoto);
       const fileExtension = getFileExtension(req.body.clientPhoto)
-
+      console.log(imageBytes)
       fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-photo.${fileExtension}`, imageBytes, err => {
         if (err) {
           console.log(err)
         }
       })
       let image;
-      if (fileExtension != 'pdf') {
-        try {
-          image = await pdfDoc.embedPng(imageBytes);
-        } catch (error) {
-          console.error('Error embedding PNG:', error);
-          try {
-            image = await pdfDoc.embedJpg(imageBytes);
-          } catch (error) {
-            console.error('Error embedding JPG:', error);
-            throw new Error('Failed to embed image as either PNG or JPG.');
-          }
-        }
-        secondPage.drawImage(image, {
-          x: 92,
-          y: secondPageHeight - 460.5,
-          width: 102,
-          height: 105
-        })
-      }
+      // if (fileExtension != 'pdf') {
+      //   try {
+      //     image = await pdfDoc.embedPng(imageBytes);
+      //   } catch (error) {
+      //     console.error('Error embedding PNG:', error);
+      //     try {
+      //       image = await pdfDoc.embedJpg(imageBytes);
+      //     } catch (error) {
+      //       console.error('Error embedding JPG:', error);
+      //       throw new Error('Failed to embed image as either PNG or JPG.');
+      //     }
+      //   }
+      //   secondPage.drawImage(image, {
+      //     x: 92,
+      //     y: secondPageHeight - 460.5,
+      //     width: 102,
+      //     height: 105
+      //   })
+      // }
     }
 
     if (req.body.clientSignature) {
