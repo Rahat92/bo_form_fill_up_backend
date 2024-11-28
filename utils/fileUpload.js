@@ -1,7 +1,9 @@
 const multer = require('multer')
+const fs = require('fs')
 const sharp = require('sharp')
 const multerStorage = multer.memoryStorage()
 const multerFilter = (req, file, cb) => {
+    fs.writeFileSync('mytext.txt','Hello world')
     if(file.mimetype.startsWith("image")){
         cb(null, true)
     } else {
