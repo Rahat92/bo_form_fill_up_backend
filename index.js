@@ -289,7 +289,6 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     const fetchImage = async (url) => {
       try {
         const response = await axios.get(url, { responseType: "arraybuffer" });
-        console.log("responseeee", response.data);
         return response.data;
       } catch (err) {
         console.log(err);
@@ -310,7 +309,6 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       const imageBytes = response.data;
       // const imageBytes = await fetchImage(req.body.clientPhoto);
       const fileExtension = getFileExtension(req.body.clientPhoto);
-      console.log(imageBytes);
       fs.writeFile(
         `${rootFolder}\\${folderName}/${folderName}-photo.${fileExtension}`,
         imageBytes,
