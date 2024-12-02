@@ -1,4 +1,6 @@
 const express = require("express");
+const { exec } = require('child_process');
+
 const JSZip = require("jszip");
 const dotenv = require("dotenv");
 const axios = require("axios");
@@ -151,7 +153,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
   );
   line05 = placeWordAtFixedColumn(
     line05,
-    `${req.body.clientName.split(" ")[0]} ${req.body.clientName.split(" ")[1]}`,
+    `${req.body.clientName.split(" ")[1]}`,
     133
   );
   line05 = placeWordAtFixedColumn(line05, `${req.body.clientName}`, 163);
@@ -911,6 +913,21 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     console.error("Error modifying PDF:", error);
     res.status(500).send("Error modifying PDF");
   }
+});
+
+
+
+app.get('/open-folder/:folderName', (req, res) => {
+  // const folderPath = 'D:/a_rahat/';
+  const folderPath = `C:/Users/ASUS/Desktop/BO/${req.params.folderName}`;
+  exec(`start "" "${folderPath}"`, (err) => {
+      if (err) {
+          console.error(err);
+          res.status(500).send('Error opening folder');
+      } else {
+          res.send('Folder opened successfully');
+      }
+  });
 });
 
 // Start the server
