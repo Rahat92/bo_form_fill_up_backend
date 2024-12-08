@@ -52,6 +52,8 @@ app.use((req, res, next) => {
 });
 
 app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
+  // console.log(req.body)
+  // return 
   const zip = new JSZip();
   const result = JSON.parse(req.body.fields);
   // return;
@@ -148,12 +150,15 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
 
   line05 = placeWordAtFixedColumn(
     line05,
-    `04${req.body.clientName.split(" ")[0]}`,
+    `04${req.body.firstName}`,
     1
   );
   line05 = placeWordAtFixedColumn(
+    line05, req.body.middleName, 103
+  )
+  line05 = placeWordAtFixedColumn(
     line05,
-    `${req.body.clientName.split(" ")[1]}`,
+    `${req.body.lastName}`,
     133
   );
   line05 = placeWordAtFixedColumn(line05, `${req.body.clientName}`, 163);
