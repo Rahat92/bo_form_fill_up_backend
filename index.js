@@ -402,54 +402,65 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
         }
       );
     }
-    // if (req.body.jointApplicantSign) {
-    //   const fileExtension = getFileExtension(req.body.jointApplicantSign)
+    if (req.body.jointApplicantSign!=='undefined') {
+      const fileExtension = getFileExtension(req.body.jointApplicantSign)
 
-    //   const jointApplicantSignatureBytes = await fetchImage(req.body.jointApplicantSign)
-    //   fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-sign.${fileExtension}`, jointApplicantSignatureBytes, err => {
-    //     if (err) {
-    //       console.log(err)
-    //     }
-    //   })
-    //   let jointApplicantSignature;
-    //   try {
-    //     jointApplicantSignature = await pdfDoc.embedPng(jointApplicantSignatureBytes);
-    //   } catch (error) {
-    //     jointApplicantSignature = await pdfDoc.embedJpg(jointApplicantSignatureBytes);
-    //   }
-    //   secondPage.drawImage(jointApplicantSignature, {
-    //     x: 400,
-    //     y: secondPageHeight - 669,
-    //     width: 102,
-    //     height: 18
-    //   })
-    // }
+      const jointApplicantSignatureBytes = await fetchImage(req.body.jointApplicantSign)
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-sign.${fileExtension}`, jointApplicantSignatureBytes, err => {
+        if (err) {
+          console.log(err)
+        }
+      })
+      let jointApplicantSignature;
+      try {
+        jointApplicantSignature = await pdfDoc.embedPng(jointApplicantSignatureBytes);
+      } catch (error) {
+        jointApplicantSignature = await pdfDoc.embedJpg(jointApplicantSignatureBytes);
+      }
+      secondPage.drawImage(jointApplicantSignature, {
+        x: 400,
+        y: secondPageHeight - 669,
+        width: 102,
+        height: 18
+      })
+    }
 
-    // if (req.body.jointApplicantPhoto) {
-    //   const fileExtension = getFileExtension(req.body.jointApplicantPhoto)
+    if (req.body.jointApplicantPhoto!=='undefined') {
+      const fileExtension = getFileExtension(req.body.jointApplicantPhoto)
 
-    //   const jointApplicantPhotoBytes = await fetchImage(req.body.jointApplicantPhoto)
+      const jointApplicantPhotoBytes = await fetchImage(req.body.jointApplicantPhoto)
 
-    //   fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-photo.${fileExtension}`, jointApplicantPhotoBytes, err => {
-    //     if (err) {
-    //       console.log(err)
-    //     }
-    //   })
-    //   let jointApplicantPhoto;
-    //   try {
-    //     jointApplicantPhoto = await pdfDoc.embedPng(jointApplicantPhotoBytes);
-    //   } catch (error) {
-    //     jointApplicantPhoto = await pdfDoc.embedJpg(jointApplicantPhotoBytes);
-    //   }
-    //   secondPage.drawImage(jointApplicantPhoto, {
-    //     x: 263,
-    //     y: secondPageHeight - 460.5,
-    //     width: 102,
-    //     height: 105
-    //   })
-    // }
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-photo.${fileExtension}`, jointApplicantPhotoBytes, err => {
+        if (err) {
+          console.log(err)
+        }
+      })
+      let jointApplicantPhoto;
+      try {
+        jointApplicantPhoto = await pdfDoc.embedPng(jointApplicantPhotoBytes);
+      } catch (error) {
+        jointApplicantPhoto = await pdfDoc.embedJpg(jointApplicantPhotoBytes);
+      }
+      secondPage.drawImage(jointApplicantPhoto, {
+        x: 263,
+        y: secondPageHeight - 460.5,
+        width: 102,
+        height: 105
+      })
+    }
+    if (req.body.jointApplicantNidPhoto!=='undefined') {
+      const fileExtension = getFileExtension(req.body.jointApplicantNidPhoto)
 
-    if (req.body.clientBankDepositeScreenShot) {
+      const jointApplicantNidPhotoBytes = await fetchImage(req.body.jointApplicantNidPhoto)
+
+      fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-nid-photo.${fileExtension}`, jointApplicantNidPhotoBytes, err => {
+        if (err) {
+          console.log(err)
+        }
+      })
+    }
+
+    if (req.body.clientBankDepositeScreenShot!=='undefined') {
       const fileExtension = getFileExtension(
         req.body.clientBankDepositeScreenShot
       );
@@ -457,7 +468,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       const clientBankDepositePhotoBytes = await fetchImage(
         req.body.clientBankDepositeScreenShot
       );
-
+      console.log('Hellobd ', clientBankDepositePhotoBytes)
       fs.writeFile(
         `${rootFolder}\\${folderName}/${folderName}-bank-deposite-screenshot.${fileExtension}`,
         clientBankDepositePhotoBytes,
