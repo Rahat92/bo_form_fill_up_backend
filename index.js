@@ -384,7 +384,6 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
         }
       );
     }
-    console.log("hahahahah", req.body.clientNominyPhoto);
     if (req.body.clientNominyPhoto !== "undefined") {
       const fileExtension = getFileExtension(req.body.clientNominyPhoto);
 

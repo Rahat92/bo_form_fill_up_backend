@@ -23,8 +23,9 @@ exports.resizeUploadedImage = (async (req, res, next) => {
     req.body.signature = `sign.jpg`;
     await sharp(req.file.buffer)
       // .resize(132, 170)
-      .resize(300, 80)
+      .resize(300)
       .toFormat("jpeg")
+      .flatten({background:'#fff'})
       .jpeg({ quality: 80 })
       .toFile(`public/${req.body.signature}`);
   
