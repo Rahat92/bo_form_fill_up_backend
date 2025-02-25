@@ -52,37 +52,65 @@ app.use((req, res, next) => {
 });
 
 app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
-  // console.log(req.body)
+
+  const {clientName, clientId, fields, jointApplicantName, clientBankAccountNumber, firstName, clientGender, clientBankRoutingNumber, clientCity, clientDateOfBirth, clientDivision, clientCountry, clientPostalCode, clientGuardian, clientMother, clientOccupation, clientNid, clientPhoto, clientNidPhoto, clientNominyPhoto, jointApplicantSign, clientAddress, clientSignature, clientBankDepositeScreenShot, middleName, lastName, jointApplicantPhoto, jointApplicantNidPhoto, clientMobileNumber, clientEmail, clientBankName, boType, clientNationality} = req.body;
   // return 
   const zip = new JSZip();
-  const result = JSON.parse(req.body.fields);
+  const result = JSON.parse(fields);
   // return;
-  const folderName = req.body.clientId;
+  const folderName = clientId.toUpperCase();
   const rootFolder = process.env.FOLDER_NAME;
+  let jointFirstName = ''
+  let jointLastName = ''
+  if (jointApplicantName !== 'undefined') {
+    const jointNameArr = jointApplicantName.toUpperCase().split(' ');
+    let namescaps = jointNameArr.map((x) => {
+      // return x[0].toUpperCase() + x.slice(1)
+      return x.toUpperCase()
+    })
+    if (namescaps.length == 2) {
+      jointFirstName = namescaps[0]
+      jointLastName = namescaps[1]
+    } else if (namescaps.length > 2) {
+      jointFirstName = namescaps.slice(0, 2).join(' ')
+      jointLastName = namescaps.slice(2, 10).join(' ')
+    }
+  }
+
+  let client_bank_account_number = clientBankAccountNumber;
+  if(clientBankAccountNumber!=='undefined'&&clientBankAccountNumber.includes('-')){
+    client_bank_account_number = clientBankAccountNumber.split('-').join('')
+  }
 
   if (!fs.existsSync(`${rootFolder}\\${folderName}`)) {
     fs.mkdirSync(path.join(`${rootFolder}`, folderName), (err) => {
       if (err) {
         console.log(err);
       } else {
-        console.log("Folder is written");
       }
     });
+    console.log("Folder is written");
+    fs.mkdirSync(path.join(`${rootFolder}`, folderName, folderName), (err) => {
+      if(err){
+        console.log(err.message)
+      }
+    })
   } else {
     return res.status(400).json({
       status: "Fail",
       message: "Already exist a folder with same name",
     });
   }
+
   try {
     const signImageBuffer = fs.readFileSync(`${__dirname}/public/sign.jpg`);
-    zip.file(`${req.body.clientId}0101.jpg`, signImageBuffer);
+    zip.file(`${clientId.toUpperCase()}0101.jpg`, signImageBuffer);
 
     zip
       .generateNodeStream({ type: "nodebuffer", streamFiles: true })
       .pipe(
         fs.createWriteStream(
-          `${rootFolder}\\${folderName}/${req.body.clientId}0101.zip`
+          `${rootFolder}\\${folderName}//${folderName}/${clientId.toUpperCase()}0101.zip`
         )
       )
       .on("finish", function () {
@@ -122,12 +150,12 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
   line03 = placeWordAtFixedColumn(line03, `02YY${folderName}`, 1);
   line03 = placeWordAtFixedColumn(
     line03,
-    `${req.body.clientBankAccountNumber}`,
+    `${client_bank_account_number}`,
     141
   );
   line03 = placeWordAtFixedColumn(
     line03,
-    `Y${req.body.clientBankRoutingNumber}`,
+    `Y${clientBankRoutingNumber}`,
     157
   );
   line03 = placeWordAtFixedColumn(line03, "", 290);
@@ -136,12 +164,12 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
 
   line04 = placeWordAtFixedColumn(
     line04,
-    `030101BAN${req.body.clientDateOfBirth}`,
+    `0301${jointApplicantName !== "undefined" && jointApplicantName.length > 0 ? '03' : '01'}BAN${clientDateOfBirth}`,
     1
   );
   line04 = placeWordAtFixedColumn(
     line04,
-    `${req.body.clientGender === "Male" ? "M" : "F"}`,
+    `${clientGender === "Male" ? "M" : "F"}`,
     58
   );
   line04 = placeWordAtFixedColumn(line04, "", 84);
@@ -150,53 +178,54 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
 
   line05 = placeWordAtFixedColumn(
     line05,
-    `04${req.body.firstName}`,
+    `04${firstName.toUpperCase()}`,
     1
   );
   line05 = placeWordAtFixedColumn(
-    line05, req.body.middleName, 103
+    line05, middleName.toUpperCase(), 103
   )
   line05 = placeWordAtFixedColumn(
     line05,
-    `${req.body.lastName}`,
+    `${lastName.toUpperCase()}`,
     133
   );
-  line05 = placeWordAtFixedColumn(line05, `${req.body.clientName}`, 163);
-  line05 = placeWordAtFixedColumn(line05, `${req.body.clientAddress}`, 283);
-  // line05 = placeWordAtFixedColumn(line05, `GULSHAN.DHAKA-1212`, 313);
-  line05 = placeWordAtFixedColumn(line05, `${req.body.clientCity}`, 373);
-  line05 = placeWordAtFixedColumn(line05, `${req.body.clientDivision}`, 398);
-  line05 = placeWordAtFixedColumn(line05, `${req.body.clientCountry}`, 423);
-  line05 = placeWordAtFixedColumn(line05, `${req.body.clientPostalCode}`, 448);
+  line05 = placeWordAtFixedColumn(line05, `${clientName.toUpperCase()}`, 163);
+  line05 = placeWordAtFixedColumn(line05, `${clientAddress.toUpperCase().split(',').join('.')}`, 283);
+  line05 = placeWordAtFixedColumn(line05, `${clientCity.toUpperCase()}`, 373);
+  line05 = placeWordAtFixedColumn(line05, `${clientDivision.toUpperCase()}`, 398);
+  line05 = placeWordAtFixedColumn(line05, `${clientCountry.toUpperCase()}`, 423);
+  line05 = placeWordAtFixedColumn(line05, `${clientPostalCode}`, 448);
   line05 = placeWordAtFixedColumn(
     line05,
-    `${req.body.clientMobileNumber}`,
+    `${clientMobileNumber}`,
     458
   );
   line05 = placeWordAtFixedColumn(
     line05,
-    `${req.body.clientEmail.slice(7)}`,
+    `${clientEmail.slice(7)}`,
     518
   );
-  line05 = placeWordAtFixedColumn(line05, `${req.body.clientGuardian}`, 598);
-  line05 = placeWordAtFixedColumn(line05, `${req.body.clientMother}`, 628);
-  line05 = placeWordAtFixedColumn(line05, `Y${req.body.clientOccupation}`, 729);
-  line05 = placeWordAtFixedColumn(line05, `${req.body.clientNid}`, 760);
+  line05 = placeWordAtFixedColumn(line05, `${clientGuardian.toUpperCase()}`, 598);
+  line05 = placeWordAtFixedColumn(line05, `${clientMother.toUpperCase()}`, 628);
+  line05 = placeWordAtFixedColumn(line05, `Y${clientOccupation.toUpperCase()}`, 729);
+  line05 = placeWordAtFixedColumn(line05, `${clientNid}`, 760);
   line05 = placeWordAtFixedColumn(line05, "", 780);
 
   let line06 = "";
   line06 = placeWordAtFixedColumn(line06, "05", 1);
+  line06 = placeWordAtFixedColumn(line06, `${jointFirstName.length > 0 ? jointFirstName : ''}`, 3);
+  line06 = placeWordAtFixedColumn(line06, `${jointLastName.length > 0 ? jointLastName : ''}`, 133);
+  line06 = placeWordAtFixedColumn(line06, `${jointApplicantName.toUpperCase() !== 'undefined' && jointApplicantName.toUpperCase().length > 0 ? jointFirstName+" "+jointLastName : ''}`, 163);
   line06 = placeWordAtFixedColumn(line06, "", 243);
   let line07 = "";
   line07 = placeWordAtFixedColumn(line07, "06", 1);
   line07 = placeWordAtFixedColumn(line07, "", 243);
-  // line06 = placeWordAtFixedColumn(line07, "")
 
   let line08 = "";
 
   line08 = placeWordAtFixedColumn(
     line08,
-    `070101${req.body.clientId}0101.jpg`,
+    `070101${clientId.toUpperCase()}0101.jpg`,
     1
   );
   line08 = placeWordAtFixedColumn(line08, "", 57);
@@ -204,7 +233,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
   let docx = officegen("docx");
 
   // Officegen calling this function after finishing to generate the docx document:
-  docx.on("finalize", function (written) {
+  docx.on("${folderName}ize", function (written) {
     console.log("Finish to create a Microsoft Word document.");
   });
 
@@ -256,22 +285,22 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
   // });
 
   fs.writeFile(
-    `${rootFolder}\\${folderName}\\${folderName}.11`,
+    `${rootFolder}\\${folderName}\\${folderName}\\${folderName}.11`,
     line01 +
-      "\r\n" +
-      line02 +
-      "\r\n" +
-      line03 +
-      "\r\n" +
-      line04 +
-      "\r\n" +
-      line05 +
-      "\r\n" +
-      line06 +
-      "\r\n" +
-      line07 +
-      "\r\n" +
-      line08,
+    "\r\n" +
+    line02 +
+    "\r\n" +
+    line03 +
+    "\r\n" +
+    line04 +
+    "\r\n" +
+    line05 +
+    "\r\n" +
+    line06 +
+    "\r\n" +
+    line07 +
+    "\r\n" +
+    line08,
     (err) => {
       if (err) {
         console.error("Error writing file:", err);
@@ -309,13 +338,13 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     //       console.log('myerror', err)
     //   }
     // })
-    if (req.body.clientPhoto) {
-      const response = await axios.get(req.body.clientPhoto, {
+    if (clientPhoto && !clientPhoto.includes('.pdf')) {
+      const response = await axios.get(clientPhoto, {
         responseType: "arraybuffer",
       });
       const imageBytes = response.data;
-      // const imageBytes = await fetchImage(req.body.clientPhoto);
-      const fileExtension = getFileExtension(req.body.clientPhoto);
+      // const imageBytes = await fetchImage(clientPhoto);
+      const fileExtension = getFileExtension(clientPhoto);
       fs.writeFile(
         `${rootFolder}\\${folderName}/${folderName}-photo.${fileExtension}`,
         imageBytes,
@@ -347,10 +376,10 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       }
     }
 
-    if (req.body.clientSignature) {
-      const signatureBytes = await fetchImage(req.body.clientSignature);
+    if (clientSignature!=='undefined') {
+      const signatureBytes = await fetchImage(clientSignature);
       // const signImageBuffer = fs.readFileSync(`${__dirname}/public/sign.jpg`);
-      const fileExtension = getFileExtension(req.body.clientSignature);
+      const fileExtension = getFileExtension(clientSignature);
 
       fs.writeFile(
         `${rootFolder}\\${folderName}/${folderName}-signature.${fileExtension}`,
@@ -370,9 +399,9 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
         height: 19,
       });
     }
-    if (req.body.clientNidPhoto !== "undefined") {
-      const fileExtension = getFileExtension(req.body.clientNidPhoto);
-      const clientNidPhotoBytes = await fetchImage(req.body.clientNidPhoto);
+    if (clientNidPhoto !== "undefined") {
+      const fileExtension = getFileExtension(clientNidPhoto);
+      const clientNidPhotoBytes = await fetchImage(clientNidPhoto);
 
       fs.writeFile(
         `${rootFolder}\\${folderName}/${folderName}-client-nid.${fileExtension}`,
@@ -384,11 +413,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
         }
       );
     }
-    if (req.body.clientNominyPhoto !== "undefined") {
-      const fileExtension = getFileExtension(req.body.clientNominyPhoto);
+    if (clientNominyPhoto !== "undefined") {
+      const fileExtension = getFileExtension(clientNominyPhoto);
 
       const clientNomineePhotoBytes = await fetchImage(
-        req.body.clientNominyPhoto
+        clientNominyPhoto
       );
       console.log("Hello ", clientNomineePhotoBytes);
       fs.writeFile(
@@ -401,10 +430,9 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
         }
       );
     }
-    if (req.body.jointApplicantSign!=='undefined') {
-      const fileExtension = getFileExtension(req.body.jointApplicantSign)
-
-      const jointApplicantSignatureBytes = await fetchImage(req.body.jointApplicantSign)
+    if (jointApplicantSign !== 'undefined' && !jointApplicantSign.includes('.pdf')) {
+      const fileExtension = getFileExtension(jointApplicantSign)
+      const jointApplicantSignatureBytes = await fetchImage(jointApplicantSign)
       fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-sign.${fileExtension}`, jointApplicantSignatureBytes, err => {
         if (err) {
           console.log(err)
@@ -424,10 +452,10 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       })
     }
 
-    if (req.body.jointApplicantPhoto!=='undefined') {
-      const fileExtension = getFileExtension(req.body.jointApplicantPhoto)
+    if (jointApplicantPhoto !== 'undefined' && !jointApplicantPhoto.includes('.pdf')) {
+      const fileExtension = getFileExtension(jointApplicantPhoto)
 
-      const jointApplicantPhotoBytes = await fetchImage(req.body.jointApplicantPhoto)
+      const jointApplicantPhotoBytes = await fetchImage(jointApplicantPhoto)
 
       fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-photo.${fileExtension}`, jointApplicantPhotoBytes, err => {
         if (err) {
@@ -447,25 +475,25 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
         height: 105
       })
     }
-    if (req.body.jointApplicantNidPhoto!=='undefined') {
-      const fileExtension = getFileExtension(req.body.jointApplicantNidPhoto)
+    if (jointApplicantNidPhoto !== 'undefined') {
+      const fileExtension = getFileExtension(jointApplicantNidPhoto)
 
-      const jointApplicantNidPhotoBytes = await fetchImage(req.body.jointApplicantNidPhoto)
-
+      const jointApplicantNidPhotoBytes = await fetchImage(jointApplicantNidPhoto)
+      console.log(jointApplicantNidPhotoBytes)
       fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-joint-applicant-nid-photo.${fileExtension}`, jointApplicantNidPhotoBytes, err => {
         if (err) {
-          console.log(err)
+          console.log('jointApplicantNidPhoto', err)
         }
       })
     }
 
-    if (req.body.clientBankDepositeScreenShot!=='undefined') {
+    if (clientBankDepositeScreenShot !== 'undefined') {
       const fileExtension = getFileExtension(
-        req.body.clientBankDepositeScreenShot
+        clientBankDepositeScreenShot
       );
 
       const clientBankDepositePhotoBytes = await fetchImage(
-        req.body.clientBankDepositeScreenShot
+        clientBankDepositeScreenShot
       );
       console.log('Hellobd ', clientBankDepositePhotoBytes)
       fs.writeFile(
@@ -538,11 +566,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     };
 
     // account holder name
-    if (req.body.clientName) {
+    if (clientName!=='undefined') {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientName,
+        clientName.toUpperCase(),
         51,
         307.8,
         10.3,
@@ -553,7 +581,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       generateAndPlaceText(
         secondPage,
         "name",
-        req.body.clientName,
+        clientName.toUpperCase(),
         125,
         640.8,
         12,
@@ -563,11 +591,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       );
     }
 
-    if (req.body.jointApplicantName !== "undefined") {
+    if (jointApplicantName.toUpperCase() !== "undefined") {
       generateAndPlaceText(
         secondPage,
         "name",
-        req.body.jointApplicantName,
+        jointFirstName+" "+jointLastName,
         125,
         665.8,
         12,
@@ -578,7 +606,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.jointApplicantName,
+        jointApplicantName.toUpperCase(),
         150,
         805.8,
         10,
@@ -589,11 +617,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // Date of birth
-    if (req.body.clientDateOfBirth) {
+    if (clientDateOfBirth) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientDateOfBirth,
+        clientDateOfBirth,
         445,
         664.5,
         9,
@@ -604,11 +632,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // occupation
-    if (req.body.clientOccupation) {
+    if (clientOccupation.toUpperCase()) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientOccupation,
+        clientOccupation.toUpperCase(),
         330,
         345,
         10,
@@ -619,11 +647,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // father/husband name
-    if (req.body.clientGuardian) {
+    if (clientGuardian.toUpperCase()) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientGuardian,
+        clientGuardian.toUpperCase(),
         145,
         363,
         10,
@@ -634,11 +662,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // mother name
-    if (req.body.clientMother) {
+    if (clientMother.toUpperCase()) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientMother,
+        clientMother.toUpperCase(),
         110,
         382,
         10,
@@ -649,11 +677,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // address
-    if (req.body.clientAddress) {
+    if (clientAddress.toUpperCase()) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientAddress,
+        clientAddress.toUpperCase(),
         90,
         430,
         10,
@@ -663,11 +691,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       );
     }
 
-    if (req.body.clientDivision) {
+    if (clientDivision.toUpperCase()) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientDivision,
+        clientDivision.toUpperCase(),
         280,
         445,
         8,
@@ -678,11 +706,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // city
-    if (req.body.clientCity) {
+    if (clientCity!=='undefined') {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientCity,
+        clientCity.toUpperCase(),
         70,
         445,
         10,
@@ -693,11 +721,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // postal code
-    if (req.body.clientPostalCode) {
+    if (clientPostalCode) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientPostalCode,
+        clientPostalCode,
         195,
         445,
         10,
@@ -708,11 +736,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // country
-    if (req.body.clientCountry) {
+    if (clientCountry.toUpperCase()) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientCountry,
+        clientCountry.toUpperCase(),
         375,
         445,
         10,
@@ -723,11 +751,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // mobile
-    if (req.body.clientMobileNumber) {
+    if (clientMobileNumber) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientMobileNumber,
+        clientMobileNumber,
         96,
         465,
         8,
@@ -738,11 +766,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // email
-    if (req.body.clientEmail) {
+    if (clientEmail) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientEmail.slice(7),
+        clientEmail.slice(7),
         285,
         465,
         10,
@@ -753,11 +781,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // nid
-    if (req.body.clientNid) {
+    if (clientNid) {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientNid,
+        clientNid,
         155,
         720,
         10,
@@ -768,11 +796,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     }
 
     // bank name
-    if (req.body.clientBankName) {
+    if (clientBankName!=='undefined') {
       generateAndPlaceText(
         firstPage,
         "name",
-        req.body.clientBankName,
+        clientBankName.toUpperCase(),
         90,
         575,
         10,
@@ -837,11 +865,11 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       firstPage,
       "tickMark",
       "\u2713",
-      req.body.boType === "single"
+      boType === "single"
         ? 393
-        : req.body.boType === "joint"
-        ? 530
-        : 455,
+        : boType === "joint"
+          ? 530
+          : 455,
       142,
       30,
       { r: 0, g: 0, b: 0 },
@@ -854,7 +882,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       firstPage,
       "tickMark",
       "\u2713",
-      req.body.clientGender === "Male" ? 166 : 212,
+      clientGender === "Male" ? 166 : 212,
       340,
       30,
       { r: 0, g: 0, b: 0 },
@@ -880,7 +908,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     generateAndPlaceText(
       firstPage,
       "name",
-      req.body.clientNationality,
+      clientNationality,
       250,
       659,
       10,
@@ -936,12 +964,12 @@ app.get('/open-folder/:folderName', (req, res) => {
   // const folderPath = 'D:/a_rahat/';
   const folderPath = `C:/Users/ASUS/Desktop/BO/${req.params.folderName}`;
   exec(`start "" "${folderPath}"`, (err) => {
-      if (err) {
-          console.error(err);
-          res.status(500).send('Error opening folder');
-      } else {
-          res.send('Folder opened successfully');
-      }
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error opening folder');
+    } else {
+      res.send('Folder opened successfully');
+    }
   });
 });
 
