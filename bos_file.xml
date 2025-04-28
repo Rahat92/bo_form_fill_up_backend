@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?> 
+-<Log xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="Flextrade-BOS-Control.xsd">
+-    <Summary>
+        <FileType>Clients</FileType>
+        <FileStatus>ProcessedWithDataError</FileStatus>
+        <ProcessingMode>BatchInsertOrUpdate</ProcessingMode>
+        <DateProcessed>2025-03-02</DateProcessed>
+        <TotalDuration>00:00:22.8591320</TotalDuration>
+        <Record>23337</Record>
+        <Successful>23335</Successful>
+        <Wrong>2</Wrong>
+    </Summary>
+-    <ErrorLog>
+        <Data_Error errCode="232" lineNum="4651" colNum="0" errText="Unknown ClientCode 032125" />
+        <Data_Error errCode="232" lineNum="54219" colNum="0" errText="Unknown ClientCode 032125" />
+    </ErrorLog>
+</Log>

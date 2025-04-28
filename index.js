@@ -52,8 +52,8 @@ app.use((req, res, next) => {
 });
 
 app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
-
-  const {clientName, clientId, fields, jointApplicantName, clientBankAccountNumber, firstName, clientGender, clientBankRoutingNumber, clientCity, clientDateOfBirth, clientDivision, clientCountry, clientPostalCode, clientGuardian, clientMother, clientOccupation, clientNid, clientPhoto, clientNidPhoto, clientNominyPhoto, jointApplicantSign, clientAddress, clientSignature, clientBankDepositeScreenShot, middleName, lastName, jointApplicantPhoto, jointApplicantNidPhoto, clientMobileNumber, clientEmail, clientBankName, boType, clientNationality} = req.body;
+  
+  const {clientName, clientId, fields, jointApplicantName, clientBankAccountNumber, clientBankBranchName, firstName, clientGender, clientBankRoutingNumber, clientCity, clientDateOfBirth, clientDivision, clientCountry, clientPostalCode, clientGuardian, clientMother, clientOccupation, clientNid, clientPhoto, clientNidPhoto, clientNominyPhoto, jointApplicantSign, clientAddress, clientSignature, clientBankDepositeScreenShot, middleName, lastName, jointApplicantPhoto, jointApplicantNidPhoto, clientMobileNumber, clientEmail, clientBankName, boType, clientNationality} = req.body;
   // return 
   const zip = new JSZip();
   const result = JSON.parse(fields);
@@ -495,7 +495,6 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       const clientBankDepositePhotoBytes = await fetchImage(
         clientBankDepositeScreenShot
       );
-      console.log('Hellobd ', clientBankDepositePhotoBytes)
       fs.writeFile(
         `${rootFolder}\\${folderName}/${folderName}-bank-deposite-screenshot.${fileExtension}`,
         clientBankDepositePhotoBytes,
@@ -606,7 +605,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
       generateAndPlaceText(
         firstPage,
         "name",
-        jointApplicantName.toUpperCase(),
+        jointFirstName+" "+jointLastName,
         150,
         805.8,
         10,
@@ -814,7 +813,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     generateAndPlaceText(
       firstPage,
       "name",
-      "Progoti Sharani SME",
+      clientBankBranchName,
       310,
       575,
       10,
@@ -827,7 +826,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     generateAndPlaceText(
       firstPage,
       "name",
-      "080271512",
+      clientBankRoutingNumber,
       105,
       555,
       10,
@@ -840,7 +839,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
     generateAndPlaceText(
       firstPage,
       "name",
-      "8813002586",
+      clientBankAccountNumber,
       335,
       555,
       10,
