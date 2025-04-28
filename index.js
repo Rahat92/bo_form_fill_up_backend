@@ -52,7 +52,8 @@ app.use((req, res, next) => {
 });
 
 app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
-  
+  console.log(req.body)
+  return
   const {clientName, clientId, fields, jointApplicantName, clientBankAccountNumber, clientBankBranchName, firstName, clientGender, clientBankRoutingNumber, clientCity, clientDateOfBirth, clientDivision, clientCountry, clientPostalCode, clientGuardian, clientMother, clientOccupation, clientNid, clientPhoto, clientNidPhoto, clientNominyPhoto, jointApplicantSign, clientAddress, clientSignature, clientBankDepositeScreenShot, middleName, lastName, jointApplicantPhoto, jointApplicantNidPhoto, clientMobileNumber, clientEmail, clientBankName, boType, clientNationality} = req.body;
   // return 
   const zip = new JSZip();
