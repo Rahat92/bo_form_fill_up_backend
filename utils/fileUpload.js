@@ -20,7 +20,7 @@ exports.uploadSingle = upload.single('signature')
 exports.resizeUploadedImage = (async (req, res, next) => {
     if(!req.file) return 
   
-    req.body.signature = `sign.jpg`;
+    req.body.signature = `${req.body.clientId}.jpg`;
     await sharp(req.file.buffer)
       // .resize(132, 170)
       .resize(300)

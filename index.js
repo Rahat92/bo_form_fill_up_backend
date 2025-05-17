@@ -53,7 +53,8 @@ app.use((req, res, next) => {
 
 app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
   
-  const {clientName, clientId, fields, jointApplicantName, clientBankAccountNumber, clientBankBranchName, firstName, clientGender, clientBankRoutingNumber, clientCity, clientDateOfBirth, clientDivision, clientCountry, clientPostalCode, clientGuardian, clientMother, clientOccupation, clientNid, clientPhoto, clientNidPhoto, clientNominyPhoto, jointApplicantSign, clientAddress, clientSignature, clientBankDepositeScreenShot, middleName, lastName, jointApplicantPhoto, jointApplicantNidPhoto, clientMobileNumber, clientEmail, clientBankName, boType, clientNationality} = req.body;
+  const {clientName, clientId, fields, jointApplicantName, clientBankAccountNumber, clientGivenBankAccountNumber, clientBankBranchName, firstName, clientGender, clientBankRoutingNumber, clientCity, clientDateOfBirth, clientDivision, clientCountry, clientPostalCode, clientGuardian, clientMother, clientOccupation, clientNid, clientPhoto, clientNidPhoto, clientNominyPhoto, jointApplicantSign, clientAddress, clientSignature, clientBankDepositeScreenShot, middleName, lastName, jointApplicantPhoto, jointApplicantNidPhoto, clientMobileNumber, clientEmail, clientBankName, boType, clientNationality} = req.body;
+  console.log(fields)
   // return 
   const zip = new JSZip();
   const result = JSON.parse(fields);
@@ -103,7 +104,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
   }
 
   try {
-    const signImageBuffer = fs.readFileSync(`${__dirname}/public/sign.jpg`);
+    const signImageBuffer = fs.readFileSync(`${__dirname}/public/${req.body.clientId}.jpg`);
     zip.file(`${clientId.toUpperCase()}0101.jpg`, signImageBuffer);
 
     zip
@@ -333,7 +334,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
 
     // const img = await fetchImage(req.body.clientCroppedSignature)
     // console.log(img)
-    // fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-cropped-sign.jpg`, img,err => {
+    // fs.writeFile(`${rootFolder}\\${folderName}/${folderName}-client-cropped-${req.body.clientId}.jpg`, img,err => {
     //   if(err){
     //       console.log('myerror', err)
     //   }
@@ -378,7 +379,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
 
     if (clientSignature!=='undefined') {
       const signatureBytes = await fetchImage(clientSignature);
-      // const signImageBuffer = fs.readFileSync(`${__dirname}/public/sign.jpg`);
+      // const signImageBuffer = fs.readFileSync(`${__dirname}/public/${req.body.clientId}.jpg`);
       const fileExtension = getFileExtension(clientSignature);
 
       fs.writeFile(
@@ -390,7 +391,7 @@ app.post("/modify-pdf", uploadSingle, resizeUploadedImage, async (req, res) => {
           }
         }
       );
-      let img = await fetchImage(`http://localhost:3001/sign.jpg`)
+      let img = await fetchImage(`http://localhost:3001/${req.body.clientId}.jpg`)
       img = await pdfDoc.embedJpg(img)
       secondPage.drawImage(img, {
         x: 400,
